@@ -1,0 +1,6 @@
+{
+	"ParamCognitoPoolId": {
+		"Description": "The User Pool ID.",
+		"Type": "String"
+	}
+}

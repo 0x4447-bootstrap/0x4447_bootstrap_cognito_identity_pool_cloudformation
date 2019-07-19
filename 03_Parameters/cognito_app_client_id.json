@@ -1,0 +1,6 @@
+{
+	"ParamCognitoAppClientID": {
+		"Description": "The app client ID for the web app.",
+		"Type": "String"
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"CognitoIdentityPool": {
+		"Type": "AWS::Cognito::IdentityPool",
+		"Properties": {
+			"IdentityPoolName": { "Ref": "AWS::StackName" },
+			"AllowUnauthenticatedIdentities": false,
+			"CognitoIdentityProviders": [
+				{
+					"ClientId": { "Ref": "ParamCognitoAppClientID" },
+					"ProviderName": { "Fn::Sub": "cognito-idp.${AWS::Region}.amazonaws.com/${ParamCognitoPoolId}" }
+				}
+			]
+		}
+	}
+}

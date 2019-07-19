@@ -1,0 +1,6 @@
+{
+	"OutputCognitoIdentityPoolAdvisor": {
+		"Value": { "Ref": "CognitoIdentityPool" },
+		"Description": "The Cognito Identity Pool."
+	}
+}

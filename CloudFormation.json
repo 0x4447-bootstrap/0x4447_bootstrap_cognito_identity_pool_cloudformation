@@ -1,0 +1,186 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "This service allows attaching the right AWS policy when a user is logged in or not.",
+	"Parameters": {
+		"ParamCognitoAppClientID": {
+			"Description": "The app client ID for the web app.",
+			"Type": "String"
+		},
+		"ParamCognitoPoolId": {
+			"Description": "The User Pool ID.",
+			"Type": "String"
+		}
+	},
+	"Resources": {
+		"CognitoIdentityPool": {
+			"Type": "AWS::Cognito::IdentityPool",
+			"Properties": {
+				"IdentityPoolName": {
+					"Ref": "AWS::StackName"
+				},
+				"AllowUnauthenticatedIdentities": false,
+				"CognitoIdentityProviders": [
+					{
+						"ClientId": {
+							"Ref": "ParamCognitoAppClientID"
+						},
+						"ProviderName": {
+							"Fn::Sub": "cognito-idp.${AWS::Region}.amazonaws.com/${ParamCognitoPoolId}"
+						}
+					}
+				]
+			}
+		},
+		"CognitoIdentityPoolPolicyDDBPayment": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "ddb_payment",
+				"Roles": [
+					{
+						"Ref": "CognitoIDPAuthenticatedRole"
+					}
+				],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"dynamodb:GetItem",
+								"dynamodb:PutItem",
+								"dynamodb:Query",
+								"dynamodb:DeleteItem"
+							],
+							"Resource": {
+								"Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Payment"
+							},
+							"Condition": {
+								"ForAllValues:StringEquals": {
+									"dynamodb:LeadingKeys": [
+										"${cognito-identity.amazonaws.com:sub}"
+									]
+								}
+							}
+						}
+					]
+				}
+			}
+		},
+		"CognitoIdentityPoolPolicyS3ProfilePhoto": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "s3_profile_photo",
+				"Roles": [
+					{
+						"Ref": "CognitoIDPAuthenticatedRole"
+					}
+				],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"s3:PutObject",
+								"s3:GetObject",
+								"s3:PutObjectAcl",
+								"s3:GetObjectAcl"
+							],
+							"Resource": [
+								{
+									"Fn::Sub": "arn:aws:s3:::profile-photo/*"
+								}
+							]
+						}
+					]
+				}
+			}
+		},
+		"CognitoIdentityPoolRoleAttachment": {
+			"Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+			"Properties": {
+				"IdentityPoolId": {
+					"Ref": "CognitoIdentityPool"
+				},
+				"Roles": {
+					"authenticated": {
+						"Fn::GetAtt": [
+							"CognitoIDPAuthenticatedRole",
+							"Arn"
+						]
+					},
+					"unauthenticated": {
+						"Fn::GetAtt": [
+							"CognitoIDPUnauthenticatedRole",
+							"Arn"
+						]
+					}
+				}
+			}
+		},
+		"CognitoIDPAuthenticatedRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"RoleName": "cognito_identitypool_authenticated",
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Federated": "cognito-identity.amazonaws.com"
+							},
+							"Action": "sts:AssumeRoleWithWebIdentity",
+							"Condition": {
+								"StringEquals": {
+									"cognito-identity.amazonaws.com:aud": {
+										"Ref": "CognitoIdentityPool"
+									}
+								},
+								"ForAnyValue:StringLike": {
+									"cognito-identity.amazonaws.com:amr": "authenticated"
+								}
+							}
+						}
+					]
+				}
+			}
+		},
+		"CognitoIDPUnauthenticatedRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"RoleName": "cognito_identitypool_unauthenticated",
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Federated": "cognito-identity.amazonaws.com"
+							},
+							"Action": "sts:AssumeRoleWithWebIdentity",
+							"Condition": {
+								"StringEquals": {
+									"cognito-identity.amazonaws.com:aud": {
+										"Ref": "CognitoIdentityPool"
+									}
+								},
+								"ForAnyValue:StringLike": {
+									"cognito-identity.amazonaws.com:amr": "unauthenticated"
+								}
+							}
+						}
+					]
+				}
+			}
+		}
+	},
+	"Outputs": {
+		"OutputCognitoIdentityPoolAdvisor": {
+			"Value": {
+				"Ref": "CognitoIdentityPool"
+			},
+			"Description": "The Cognito Identity Pool."
+		}
+	}
+}

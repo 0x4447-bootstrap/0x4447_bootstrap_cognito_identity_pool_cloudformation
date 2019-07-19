@@ -1,0 +1,31 @@
+{
+	"CognitoIdentityPoolPolicyDDBPayment": {
+		"Type": "AWS::IAM::Policy",
+		"Properties": {
+			"PolicyName": "ddb_payment",
+			"Roles": [
+				{ "Ref": "CognitoIDPAuthenticatedRole" }
+			],
+			"PolicyDocument": {
+				"Version": "2012-10-17",
+				"Statement": [
+					{
+						"Effect": "Allow",
+						"Action": [
+							"dynamodb:GetItem",
+							"dynamodb:PutItem",
+							"dynamodb:Query",
+							"dynamodb:DeleteItem"
+						],
+						"Resource": { "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Payment" },
+						"Condition": {
+							"ForAllValues:StringEquals": {
+								"dynamodb:LeadingKeys": ["${cognito-identity.amazonaws.com:sub}"]
+							}
+						}
+					}
+				]
+			}
+		}
+	}
+}
