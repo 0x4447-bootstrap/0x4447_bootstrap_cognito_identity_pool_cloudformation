@@ -1,0 +1,6 @@
+{
+	"ParamS3ProfilePhoto": {
+		"Description": "The bucket name where the avatars are saved.",
+		"Type": "String"
+	}
+}

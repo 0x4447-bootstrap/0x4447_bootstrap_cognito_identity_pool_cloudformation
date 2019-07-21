@@ -9,6 +9,10 @@
 		"ParamCognitoPoolId": {
 			"Description": "The User Pool ID.",
 			"Type": "String"
+		},
+		"ParamS3ProfilePhoto": {
+			"Description": "The bucket name where the avatars are saved.",
+			"Type": "String"
 		}
 	},
 	"Resources": {
@@ -88,7 +92,7 @@
 							],
 							"Resource": [
 								{
-									"Fn::Sub": "arn:aws:s3:::profile-photo/*"
+									"Fn::Sub": "arn:aws:s3:::${ParamS3ProfilePhoto}/*"
 								}
 							]
 						}
