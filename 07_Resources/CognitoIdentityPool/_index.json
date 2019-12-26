@@ -2,7 +2,7 @@
 	"CognitoIdentityPool": {
 		"Type": "AWS::Cognito::IdentityPool",
 		"Properties": {
-			"IdentityPoolName": { "Ref": "AWS::StackName" },
+			"IdentityPoolName": "zer0x_bootstrap",
 			"AllowUnauthenticatedIdentities": false,
 			"CognitoIdentityProviders": [
 				{

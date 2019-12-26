@@ -2,7 +2,7 @@
 	"CognitoIDPAuthenticatedRole": {
 		"Type": "AWS::IAM::Role",
 		"Properties": {
-			"RoleName": "cognito_identitypool_authenticated",
+			"RoleName": "zer0x_bootstrap_cognito_identitypool_authenticated",
 			"AssumeRolePolicyDocument": {
 				"Version": "2012-10-17",
 				"Statement": [
